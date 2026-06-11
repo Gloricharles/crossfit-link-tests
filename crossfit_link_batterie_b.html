@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrossFit Link — Rapport Batterie B</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --blue: #1a56db;
+    --blue-light: #e8f0fe;
+    --blue-mid: #3b82f6;
+    --pink: #c2185b;
+    --pink-light: #fce4ec;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --green-mid: #4caf50;
+    --amber: #e65100;
+    --amber-light: #fff3e0;
+    --red: #b71c1c;
+    --red-light: #ffebee;
+    --gray: #424242;
+    --gray-light: #f5f5f5;
+    --gray-mid: #9e9e9e;
+    --border: #e0e0e0;
+    --text: #212121;
+    --text-muted: #757575;
+    --white: #ffffff;
+    --radius: 8px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    background: #f8f9fa;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: #111827;
+    color: white;
+    padding: 2rem 0 1.5rem;
+  }
+  .site-header .inner { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+  .site-header .logo { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #9ca3af; margin-bottom: 0.5rem; }
+  .site-header h1 { font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 0.4rem; }
+  .site-header .subtitle { font-size: 14px; color: #9ca3af; }
+  .site-header .meta { margin-top: 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .meta-item { font-size: 12px; color: #6b7280; }
+  .meta-item strong { color: #d1d5db; }
+
+  /* NAV TABS */
+  .nav-wrap { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-btn:hover { color: var(--text); }
+  .nav-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* MAIN */
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-head { margin-bottom: 1.5rem; }
+  .section-head h2 { font-size: 22px; font-weight: 700; margin-bottom: 0.3rem; }
+  .section-head p { font-size: 14px; color: var(--text-muted); }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); margin-bottom: 0.4rem; }
+
+  /* CARDS */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+
+  /* METRIC GRID */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .metric {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .metric-val { font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .metric-sub { font-size: 11px; color: var(--gray-mid); margin-top: 3px; }
+  .metric.blue .metric-val { color: var(--blue); }
+  .metric.green .metric-val { color: var(--green); }
+  .metric.amber .metric-val { color: var(--amber); }
+  .metric.red .metric-val { color: var(--red); }
+
+  /* TABLES */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); font-weight: 600; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .col-r { text-align: right; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-up { background: var(--green-light); color: var(--green); }
+  .badge-down { background: var(--red-light); color: var(--red); }
+  .badge-flat { background: var(--gray-light); color: var(--gray); }
+  .badge-rx { background: var(--blue-light); color: var(--blue); }
+  .badge-sc { background: var(--amber-light); color: var(--amber); }
+  .badge-warn { background: #fff8e1; color: #f57f17; }
+
+  /* CHART */
+  .chart-wrap { position: relative; width: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 5px; vertical-align: middle; }
+
+  /* ALERT BOXES */
+  .alert {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 1rem;
+    border-left: 3px solid;
+  }
+  .alert-info { background: var(--blue-light); color: #1e3a5f; border-color: var(--blue-mid); }
+  .alert-warn { background: var(--amber-light); color: #7c3000; border-color: var(--amber); }
+  .alert-danger { background: var(--red-light); color: var(--red); border-color: #ef5350; }
+  .alert-success { background: var(--green-light); color: var(--green); border-color: var(--green-mid); }
+  .alert strong { display: block; margin-bottom: 2px; }
+
+  /* PROGRESS BARS */
+  .prog-wrap { margin-bottom: 10px; }
+  .prog-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .prog-track { height: 7px; background: var(--gray-light); border-radius: 4px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 4px; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ATHLETE PROFILE */
+  .athlete-profile {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 10px;
+    background: white;
+    box-shadow: var(--shadow);
+  }
+  .ap-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ap-name { font-weight: 700; font-size: 15px; }
+  .ap-meta { font-size: 12px; color: var(--text-muted); }
+  .ap-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; font-size: 12px; }
+  .ap-stat-label { color: var(--text-muted); margin-bottom: 1px; }
+  .ap-stat-val { font-weight: 600; font-size: 13px; }
+
+  /* FILTER ROW */
+  .filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .filter-row label { font-size: 13px; color: var(--text-muted); }
+  .filter-row select, .filter-row input[type=text] {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    color: var(--text);
+  }
+
+  /* MEMBER CARD */
+  .member-section { margin-bottom: 2rem; }
+  .member-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 8px; border-bottom: 2px solid var(--blue); }
+
+  /* FOOTER */
+  .page-footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--text-muted); margin-top: 2rem; border-top: 1px solid var(--border); }
+
+  /* PRINT */
+  @media print {
+    .nav-wrap { display: none; }
+    .section { display: block !important; }
+    .main { padding: 1rem; }
+    .card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <div class="logo">CrossFit Link</div>
+    <h1>Résultats — Batterie de tests B</h1>
+    <p class="subtitle">Analyse complète · Sessions déc. 2023 → déc. 2025</p>
+    <div class="meta">
+      <div class="meta-item"><strong>5 sessions</strong> analysées</div>
+      <div class="meta-item"><strong>6 tests</strong> (Conditioning, CrossFit, Weightlifting, Strength, Skill, Stamina)</div>
+      <div class="meta-item"><strong>~200</strong> participations individuelles</div>
+      <div class="meta-item">Rapport généré le <strong id="reportDate"></strong></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-wrap">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('overview')">Vue d'ensemble</button>
+    <button class="nav-btn" onclick="showSection('conditioning')">Conditioning</button>
+    <button class="nav-btn" onclick="showSection('weightlifting')">Weightlifting</button>
+    <button class="nav-btn" onclick="showSection('strength')">Strength</button>
+    <button class="nav-btn" onclick="showSection('crossfit')">CrossFit</button>
+    <button class="nav-btn" onclick="showSection('skill')">Skill</button>
+    <button class="nav-btn" onclick="showSection('stamina')">Stamina</button>
+    <button class="nav-btn" onclick="showSection('athletes')">Suivi individuel</button>
+    <button class="nav-btn" onclick="showSection('coachs')">Notes coachs</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ===================== VUE D'ENSEMBLE ===================== -->
+<div id="section-overview" class="section active">
+  <div class="section-head">
+    <div class="eyebrow">Résumé</div>
+    <h2>Vue d'ensemble — Batterie B</h2>
+    <p>La batterie B est réalisée tous les 6 mois, alternée avec la batterie A. Elle couvre 6 qualités physiques sur une semaine de tests.</p>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric blue"><div class="metric-label">Sessions couvertes</div><div class="metric-val">5</div><div class="metric-sub">Déc 23 → Déc 25</div></div>
+    <div class="metric blue"><div class="metric-label">Tests actifs</div><div class="metric-val">6</div><div class="metric-sub">sur 6 planifiés</div></div>
+    <div class="metric green"><div class="metric-label">Participants max</div><div class="metric-val">~46</div><div class="metric-sub">Déc. 2023</div></div>
+    <div class="metric amber"><div class="metric-label">Participants min</div><div class="metric-val">~26</div><div class="metric-sub">Juil. 2025</div></div>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>Important — comment lire ce rapport</strong>
+    La population change à chaque session : comparer des moyennes ou médianes de cohorte entière entre sessions revient en partie à comparer des groupes différents. Les conclusions solides portent sur les <strong>athlètes appariés</strong> — ceux présents à plusieurs sessions du même test. Les évolutions de groupe sont données à titre indicatif.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Participation par session</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#1a56db"></span>Hommes</span>
+      <span><span class="legend-dot" style="background:#c2185b"></span>Femmes</span>
+    </div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="partChart" role="img" aria-label="Participation par session batterie B">Déc 2023: 29H+17F=46. Juin 2024: 27H+17F=44. Déc 2024: 17H+10F=27. Juil 2025: 16H+10F=26. Déc 2025: 20H+13F=33.</canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Qualité des données par test</div>
+    <div class="prog-wrap"><div class="prog-label"><span>Conditioning — calories totales</span><span style="color:var(--green);font-weight:600">Haute</span></div><div class="prog-track"><div class="prog-fill" style="width:90%;background:#4caf50"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Strength — Front Squat 3RM</span><span style="color:var(--green);font-weight:600">Haute (après nettoyage)</span></div><div class="prog-track"><div class="prog-fill" style="width:82%;background:#4caf50"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Weightlifting — Snatch 1RM</span><span style="color:var(--green);font-weight:600">Haute (après nettoyage)</span></div><div class="prog-track"><div class="prog-fill" style="width:80%;background:#4caf50"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Stamina — Pull/Push/WB</span><span style="color:var(--amber);font-weight:600">Bonne (1 session, baseline)</span></div><div class="prog-track"><div class="prog-fill" style="width:70%;background:#ff9800"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>CrossFit — temps</span><span style="color:var(--amber);font-weight:600">Moyenne (formats hétérogènes)</span></div><div class="prog-track"><div class="prog-fill" style="width:65%;background:#ff9800"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Weightlifting — Isabel</span><span style="color:var(--amber);font-weight:600">Moyenne (temps ambigus)</span></div><div class="prog-track"><div class="prog-fill" style="width:60%;background:#ff9800"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Strength — Pull-up / Dips</span><span style="color:var(--amber);font-weight:600">Partielle (élastiques non convertibles)</span></div><div class="prog-track"><div class="prog-fill" style="width:42%;background:#ff9800"></div></div></div>
+    <div class="prog-wrap"><div class="prog-label"><span>Skill — Flight Simulator</span><span style="color:var(--red);font-weight:600">Faible (3 sessions, scoring dual)</span></div><div class="prog-track"><div class="prog-fill" style="width:28%;background:#e53935"></div></div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Signaux solides</div>
+      <ul style="font-size:13px;padding-left:1.2rem;line-height:2">
+        <li>Participation en baisse de ~40% entre déc. 2023 et juil. 2025</li>
+        <li>Conditioning : plusieurs hommes progressent de +30 à +84 cal sur cohorte appariée</li>
+        <li>Snatch : Fraipont +20 kg, Godefroid +15 kg (au-dessus du bruit)</li>
+        <li>CrossFit V1 : Boudin N. -75s, L'Olivo -90s sur 3 sessions</li>
+        <li>Front Squat : progressions individuelles nettes chez 5-6 hommes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">Points de vigilance</div>
+      <ul style="font-size:13px;padding-left:1.2rem;line-height:2">
+        <li>Pull-up / Dips : couleurs d'élastique non convertibles en kg</li>
+        <li>Skill : 2 sessions manquantes (juin 2024, déc. 2024)</li>
+        <li>Stamina : première session seulement — pas encore de longitudinal</li>
+        <li>Quelques fautes de frappe d'email (Victor Noel : 3 adresses)</li>
+        <li>Formats de temps hétérogènes dans Isabel et CrossFit</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONDITIONING ===================== -->
+<div id="section-conditioning" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Conditioning</div>
+    <h2>Mikko Salo Triangle</h2>
+    <p>EMOM 40 minutes — 1min Row / 1min SkiErg / 1min Echo Bike / 1min rest — Score : calories totales. Quasi-totalité des participants en RX.</p>
+  </div>
+
+  <div class="filter-row">
+    <label>Afficher :</label>
+    <select id="condFilter" onchange="renderCondChart()">
+      <option value="both">Hommes + Femmes</option>
+      <option value="H">Hommes uniquement</option>
+      <option value="F">Femmes uniquement</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Médiane par session</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#1a56db"></span>Hommes</span>
+      <span><span class="legend-dot" style="background:#c2185b"></span>Femmes</span>
+    </div>
+    <div class="chart-wrap" style="height:240px">
+      <canvas id="condChart" role="img" aria-label="Conditioning Mikko Salo Triangle médiane par session"></canvas>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Lignes = médiane. La population change à chaque session — variations de médiane non interprétables comme progression cohorte.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Hommes — données par session</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">29</td><td class="col-r"><strong>416</strong></td><td class="col-r">287</td><td class="col-r">544</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">27</td><td class="col-r"><strong>421</strong></td><td class="col-r">230</td><td class="col-r">532</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">17</td><td class="col-r"><strong>431</strong></td><td class="col-r">338</td><td class="col-r">600</td></tr>
+          <tr><td>Juil. 2025</td><td class="col-r">16</td><td class="col-r"><strong>440</strong></td><td class="col-r">321</td><td class="col-r">544</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">20</td><td class="col-r"><strong>426</strong></td><td class="col-r">230</td><td class="col-r">542</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Femmes — données par session</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">17</td><td class="col-r"><strong>322</strong></td><td class="col-r">222</td><td class="col-r">393</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">17</td><td class="col-r"><strong>305</strong></td><td class="col-r">195</td><td class="col-r">331</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">10</td><td class="col-r"><strong>333</strong></td><td class="col-r">236</td><td class="col-r">489</td></tr>
+          <tr><td>Juil. 2025</td><td class="col-r">10</td><td class="col-r"><strong>359</strong></td><td class="col-r">229</td><td class="col-r">384</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">13</td><td class="col-r"><strong>314</strong></td><td class="col-r">251</td><td class="col-r">376</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cohorte appariée — athlètes présents à 2+ sessions</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Sexe</th><th class="col-r">Déc 23</th><th class="col-r">Juin 24</th><th class="col-r">Déc 24</th><th class="col-r">Juil 25</th><th class="col-r">Déc 25</th><th>Évolution</th></tr>
+        <tr><td>Fraipont G.</td><td>H</td><td class="col-r">451</td><td class="col-r">439</td><td class="col-r">491</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+40 cal</span></td></tr>
+        <tr><td>Paulus J.</td><td>H</td><td class="col-r">384</td><td class="col-r">417</td><td class="col-r">422</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+38 cal</span></td></tr>
+        <tr><td>Glorieux C.</td><td>H</td><td class="col-r">400</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">484</td><td><span class="badge badge-up">+84 cal</span></td></tr>
+        <tr><td>Gilard T.</td><td>H</td><td class="col-r">474</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">544</td><td class="col-r">499</td><td><span class="badge badge-up">+25 cal</span></td></tr>
+        <tr><td>Lehembre H.</td><td>H</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">481</td><td class="col-r">503</td><td class="col-r">—</td><td><span class="badge badge-up">+22 cal</span></td></tr>
+        <tr><td>Blaffart A.</td><td>H</td><td class="col-r">494</td><td class="col-r">498</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+4 cal</span></td></tr>
+        <tr><td>Vanderlinck A.</td><td>F</td><td class="col-r">—</td><td class="col-r">318</td><td class="col-r">—</td><td class="col-r">359</td><td class="col-r">349</td><td><span class="badge badge-up">+31 cal</span></td></tr>
+        <tr><td>Lejeune T.</td><td>F</td><td class="col-r">—</td><td class="col-r">331</td><td class="col-r">—</td><td class="col-r">384</td><td class="col-r">—</td><td><span class="badge badge-up">+53 cal</span></td></tr>
+        <tr><td>Vandervorst O.</td><td>H</td><td class="col-r">505</td><td class="col-r">470</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-down">-35 cal</span></td></tr>
+        <tr><td>Baudouin C.</td><td>F</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">349</td><td class="col-r">344</td><td class="col-r">314</td><td><span class="badge badge-down">-35 cal</span></td></tr>
+        <tr><td>Arnould S.</td><td>F</td><td class="col-r">349</td><td class="col-r">—</td><td class="col-r">334</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-down">-15 cal</span></td></tr>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Évolution = dernière valeur - première valeur disponible. Les sessions manquantes entre deux points ne permettent pas de distinguer une progression linéaire d'une variation ponctuelle.</p>
+  </div>
+</div>
+
+<!-- ===================== WEIGHTLIFTING ===================== -->
+<div id="section-weightlifting" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Weightlifting</div>
+    <h2>Snatch 1RM + Isabel</h2>
+    <p>Snatch 1RM en kg. Isabel = 30 snatches for time (60/40 kg en RX).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Snatch 1RM — médiane par session</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#1a56db"></span>Hommes</span>
+      <span><span class="legend-dot" style="background:#c2185b"></span>Femmes</span>
+    </div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="snatchChart" role="img" aria-label="Snatch 1RM médiane par session"></canvas>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Creux hommes en juin 2024 : probablement lié à la composition de la cohorte ce jour-là, pas une régression réelle.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Hommes — Snatch 1RM</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">26</td><td class="col-r"><strong>62.5 kg</strong></td><td class="col-r">35</td><td class="col-r">100</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">22</td><td class="col-r"><strong>50 kg</strong></td><td class="col-r">25</td><td class="col-r">80</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">15</td><td class="col-r"><strong>55 kg</strong></td><td class="col-r">30</td><td class="col-r">90</td></tr>
+          <tr><td>Juin 2025</td><td class="col-r">12</td><td class="col-r"><strong>57 kg</strong></td><td class="col-r">45</td><td class="col-r">90</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">14</td><td class="col-r"><strong>55 kg</strong></td><td class="col-r">30</td><td class="col-r">70</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Femmes — Snatch 1RM</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">20</td><td class="col-r"><strong>30 kg</strong></td><td class="col-r">20</td><td class="col-r">60</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">18</td><td class="col-r"><strong>28 kg</strong></td><td class="col-r">10</td><td class="col-r">58</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">12</td><td class="col-r"><strong>25 kg</strong></td><td class="col-r">13</td><td class="col-r">50</td></tr>
+          <tr><td>Juin 2025</td><td class="col-r">8</td><td class="col-r"><strong>30 kg</strong></td><td class="col-r">23</td><td class="col-r">38</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">10</td><td class="col-r"><strong>30 kg</strong></td><td class="col-r">19</td><td class="col-r">55</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cohorte appariée — Snatch 1RM</div>
+    <div class="alert alert-info" style="margin-bottom:12px">Les variations inférieures à ±5 kg sont dans la zone d'incertitude normale du 1RM (reproductibilité ±2-5 kg). Seules les progressions &gt;10 kg sont interprétables avec confiance.</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Sexe</th><th class="col-r">Déc 23</th><th class="col-r">Juin 24</th><th class="col-r">Déc 24</th><th class="col-r">Juin 25</th><th class="col-r">Déc 25</th><th>Évolution</th></tr>
+        <tr><td>Fraipont G.</td><td>H</td><td class="col-r">65</td><td class="col-r">75</td><td class="col-r">85</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+20 kg ✓</span></td></tr>
+        <tr><td>Godefroid T.</td><td>H</td><td class="col-r">55</td><td class="col-r">60</td><td class="col-r">65</td><td class="col-r">—</td><td class="col-r">70</td><td><span class="badge badge-up">+15 kg ✓</span></td></tr>
+        <tr><td>Boudin N.</td><td>H</td><td class="col-r">—</td><td class="col-r">80</td><td class="col-r">88</td><td class="col-r">90</td><td class="col-r">90</td><td><span class="badge badge-up">+10 kg ✓</span></td></tr>
+        <tr><td>Baudouin C.</td><td>F</td><td class="col-r">52</td><td class="col-r">57</td><td class="col-r">—</td><td class="col-r">58</td><td class="col-r">55</td><td><span class="badge badge-up">+3 kg</span></td></tr>
+        <tr><td>Paulus J.</td><td>H</td><td class="col-r">70</td><td class="col-r">70</td><td class="col-r">74</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+4 kg</span></td></tr>
+        <tr><td>Michel M.</td><td>F</td><td class="col-r">—</td><td class="col-r">28</td><td class="col-r">27</td><td class="col-r">27</td><td class="col-r">28</td><td><span class="badge badge-flat">stable</span></td></tr>
+        <tr><td>Cappaert C.</td><td>H</td><td class="col-r">60</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">60</td><td class="col-r">—</td><td><span class="badge badge-flat">stable</span></td></tr>
+        <tr><td>Hasard M.</td><td>H</td><td class="col-r">72</td><td class="col-r">70</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-down">-2 kg</span></td></tr>
+        <tr><td>Barlet C.</td><td>F</td><td class="col-r">53</td><td class="col-r">50</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-down">-3 kg</span></td></tr>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">✓ = progression au-dessus du bruit de mesure raisonnable.</p>
+  </div>
+</div>
+
+<!-- ===================== STRENGTH ===================== -->
+<div id="section-strength" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Strength</div>
+    <h2>Front Squat 3RM · Pull-up 3RM · Dips 3RM</h2>
+    <p>Trois mouvements de force. Le Front Squat est la variable la plus fiable. Pull-up et Dips sont partiellement exploitables (nombreuses valeurs en couleur d'élastique non convertibles en kg).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Front Squat 3RM — médiane par session</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#1a56db"></span>Hommes</span>
+      <span><span class="legend-dot" style="background:#c2185b"></span>Femmes</span>
+    </div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="squatChart" role="img" aria-label="Front Squat 3RM médiane par session"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Hommes — Front Squat 3RM</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">24</td><td class="col-r"><strong>85 kg</strong></td><td class="col-r">55</td><td class="col-r">115</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">22</td><td class="col-r"><strong>82 kg</strong></td><td class="col-r">50</td><td class="col-r">120</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">18</td><td class="col-r"><strong>85 kg</strong></td><td class="col-r">40</td><td class="col-r">110</td></tr>
+          <tr><td>Juil. 2025</td><td class="col-r">14</td><td class="col-r"><strong>90 kg</strong></td><td class="col-r">58</td><td class="col-r">120</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">16</td><td class="col-r"><strong>90 kg</strong></td><td class="col-r">40</td><td class="col-r">110</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Femmes — Front Squat 3RM</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">n</th><th class="col-r">Médiane</th><th class="col-r">Min</th><th class="col-r">Max</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">22</td><td class="col-r"><strong>50 kg</strong></td><td class="col-r">34</td><td class="col-r">85</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r">19</td><td class="col-r"><strong>48 kg</strong></td><td class="col-r">34</td><td class="col-r">83</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r">16</td><td class="col-r"><strong>47 kg</strong></td><td class="col-r">30</td><td class="col-r">85</td></tr>
+          <tr><td>Juil. 2025</td><td class="col-r">10</td><td class="col-r"><strong>51 kg</strong></td><td class="col-r">30</td><td class="col-r">90</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">12</td><td class="col-r"><strong>50 kg</strong></td><td class="col-r">20</td><td class="col-r">55</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cohorte appariée — Front Squat 3RM</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Sexe</th><th class="col-r">Déc 23</th><th class="col-r">Juin 24</th><th class="col-r">Déc 24</th><th class="col-r">Juil 25</th><th class="col-r">Déc 25</th><th>Évolution</th></tr>
+        <tr><td>Fraipont G.</td><td>H</td><td class="col-r">100</td><td class="col-r">115</td><td class="col-r">115</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+15 kg</span></td></tr>
+        <tr><td>Blaffart A.</td><td>H</td><td class="col-r">112</td><td class="col-r">115</td><td class="col-r">—</td><td class="col-r">120</td><td class="col-r">—</td><td><span class="badge badge-up">+8 kg</span></td></tr>
+        <tr><td>Godefroid T.</td><td>H</td><td class="col-r">—</td><td class="col-r">95</td><td class="col-r">100</td><td class="col-r">—</td><td class="col-r">105</td><td><span class="badge badge-up">+10 kg</span></td></tr>
+        <tr><td>Vanderseypen F.</td><td>H</td><td class="col-r">90</td><td class="col-r">—</td><td class="col-r">100</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+10 kg</span></td></tr>
+        <tr><td>Baudouin C.</td><td>F</td><td class="col-r">—</td><td class="col-r">83</td><td class="col-r">85</td><td class="col-r">90</td><td class="col-r">—</td><td><span class="badge badge-up">+7 kg</span></td></tr>
+        <tr><td>Lechat A.</td><td>H</td><td class="col-r">—</td><td class="col-r">80</td><td class="col-r">85</td><td class="col-r">80</td><td class="col-r">85</td><td><span class="badge badge-up">+5 kg</span></td></tr>
+        <tr><td>Paulus J.</td><td>H</td><td class="col-r">—</td><td class="col-r">95</td><td class="col-r">100</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-up">+5 kg</span></td></tr>
+        <tr><td>Boudin N.</td><td>H</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">110</td><td class="col-r">—</td><td class="col-r">110</td><td><span class="badge badge-flat">stable</span></td></tr>
+        <tr><td>Van Frausum J.</td><td>F</td><td class="col-r">55</td><td class="col-r">—</td><td class="col-r">40</td><td class="col-r">53</td><td class="col-r">55</td><td><span class="badge badge-flat">stable</span></td></tr>
+        <tr><td>Aglave L.</td><td>H</td><td class="col-r">83</td><td class="col-r">—</td><td class="col-r">80</td><td class="col-r">75</td><td class="col-r">—</td><td><span class="badge badge-down">-8 kg</span></td></tr>
+        <tr><td>Lebrun M.</td><td>F</td><td class="col-r">72</td><td class="col-r">77</td><td class="col-r">70</td><td class="col-r">—</td><td class="col-r">—</td><td><span class="badge badge-down">-2 kg</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Pull-up &amp; Dips 3RM — note sur l'exploitabilité</div>
+    <div class="alert alert-warn">
+      <strong>Données partiellement exploitables</strong>
+      Les formulaires 2023 et 2024 collectaient les résultats pull-up et dips en texte libre. Résultat : environ 77% des femmes et 21% des hommes ont noté une couleur d'élastique (turquoise, jaune, noir…) plutôt qu'une charge en kg. Ces valeurs sont non convertibles sans un référentiel couleur → résistance documenté et stable. Seuls les athlètes ayant noté une charge en kg sont comparables longitudinalement.
+    </div>
+    <div class="two-col">
+      <div>
+        <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">Pull-up 3RM strict (kg) — hommes ayant des valeurs numériques à 2+ sessions</p>
+        <table style="font-size:12px">
+          <tr><th>Athlète</th><th class="col-r">Déc 23</th><th class="col-r">Juin 24</th><th class="col-r">Déc 24</th><th class="col-r">Juil 25</th><th>Évol.</th></tr>
+          <tr><td>Fraipont G.</td><td class="col-r">40</td><td class="col-r">42.5</td><td class="col-r">45</td><td class="col-r">—</td><td><span class="badge badge-up">+5</span></td></tr>
+          <tr><td>Vastesaeger B.</td><td class="col-r">34.5</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">—</td><td>—</td></tr>
+          <tr><td>Vanderseypen F.</td><td class="col-r">32</td><td class="col-r">—</td><td class="col-r">20</td><td class="col-r">—</td><td><span class="badge badge-down">-12</span></td></tr>
+          <tr><td>Boe S.</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">38.5</td><td class="col-r">40</td><td><span class="badge badge-up">+1.5</span></td></tr>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">Dips 3RM (kg) — hommes</p>
+        <table style="font-size:12px">
+          <tr><th>Athlète</th><th class="col-r">Déc 23</th><th class="col-r">Juin 24</th><th class="col-r">Déc 24</th><th class="col-r">Juil 25</th><th>Évol.</th></tr>
+          <tr><td>Fraipont G.</td><td class="col-r">47.5</td><td class="col-r">55</td><td class="col-r">60</td><td class="col-r">—</td><td><span class="badge badge-up">+12.5</span></td></tr>
+          <tr><td>Vanderseypen F.</td><td class="col-r">40</td><td class="col-r">—</td><td class="col-r">36</td><td class="col-r">—</td><td><span class="badge badge-down">-4</span></td></tr>
+          <tr><td>Boe S.</td><td class="col-r">—</td><td class="col-r">—</td><td class="col-r">38</td><td class="col-r">40</td><td><span class="badge badge-up">+2</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CROSSFIT ===================== -->
+<div id="section-crossfit" class="section">
+  <div class="section-head">
+    <div class="eyebrow">CrossFit</div>
+    <h2>500m Row / 40-30-20-10 / Ring MU</h2>
+    <p>For Time. V1 = RX (ring muscle-ups). V2 = bar muscle-up. V3 = burpees jumping pull-ups. Les versions ne sont pas comparables entre elles.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Médiane des temps par version et session (secondes)</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#1a56db"></span>V1/RX hommes</span>
+      <span><span class="legend-dot" style="background:#c2185b"></span>V1/RX femmes</span>
+      <span><span class="legend-dot" style="background:#2e7d32"></span>V3 tous</span>
+    </div>
+    <div class="chart-wrap" style="height:240px">
+      <canvas id="cfChart" role="img" aria-label="CrossFit temps médiane par version et session"></canvas>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Temps plus bas = meilleur. V1 hommes déc. 2025 absent du graphe : effectif RX trop faible cette session pour calculer une médiane fiable.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Répartition des versions — déc. 2023</div>
+      <div class="prog-wrap"><div class="prog-label"><span>V1/RX (ring MU)</span><span>26%</span></div><div class="prog-track"><div class="prog-fill" style="width:26%;background:#1a56db"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>V2 (bar MU)</span><span>4%</span></div><div class="prog-track"><div class="prog-fill" style="width:4%;background:#c2185b"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>V3 (burpees JP)</span><span>66%</span></div><div class="prog-track"><div class="prog-fill" style="width:66%;background:#2e7d32"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>Autre / hybride</span><span>8%</span></div><div class="prog-track"><div class="prog-fill" style="width:8%;background:#9e9e9e"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Répartition des versions — juil. 2025</div>
+      <div class="prog-wrap"><div class="prog-label"><span>V1/RX (ring MU)</span><span>24%</span></div><div class="prog-track"><div class="prog-fill" style="width:24%;background:#1a56db"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>V2 (bar MU)</span><span>10%</span></div><div class="prog-track"><div class="prog-fill" style="width:10%;background:#c2185b"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>V3 (burpees JP)</span><span>62%</span></div><div class="prog-track"><div class="prog-fill" style="width:62%;background:#2e7d32"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>Autre</span><span>4%</span></div><div class="prog-track"><div class="prog-fill" style="width:4%;background:#9e9e9e"></div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cohorte appariée — même version à 2+ sessions</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Sexe</th><th>Version</th><th class="col-r">Session 1</th><th class="col-r">Session 2</th><th class="col-r">Session 3</th><th>Évolution</th></tr>
+        <tr><td>Boudin N.</td><td>H</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">431s (déc23)</td><td class="col-r">384s (déc24)</td><td class="col-r">356s (juil25)</td><td><span class="badge badge-up">-75s ✓</span></td></tr>
+        <tr><td>L'Olivo T.</td><td>H</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">579s (déc23)</td><td class="col-r">468s (juin24)</td><td class="col-r">489s (juil25)</td><td><span class="badge badge-up">-90s ✓</span></td></tr>
+        <tr><td>Fraipont G.</td><td>H</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">287s (déc23)</td><td class="col-r">265s (juin24)</td><td class="col-r">—</td><td><span class="badge badge-up">-22s</span></td></tr>
+        <tr><td>Boe S.</td><td>H</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">387s (juin24)</td><td class="col-r">432s (déc24)</td><td class="col-r">384s (juil25)</td><td><span class="badge badge-flat">-3s net</span></td></tr>
+        <tr><td>Baudouin C.</td><td>F</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">594s (déc23)</td><td class="col-r">648s (juin24)</td><td class="col-r">569s (juil25)</td><td><span class="badge badge-flat">-25s net</span></td></tr>
+        <tr><td>Aglave L.</td><td>H</td><td><span class="badge badge-sc">V3</span></td><td class="col-r">327s (déc23)</td><td class="col-r">310s (juil25)</td><td class="col-r">—</td><td><span class="badge badge-up">-17s</span></td></tr>
+        <tr><td>Vincart K.</td><td>H</td><td><span class="badge badge-rx">V1/RX</span></td><td class="col-r">539s (déc23)</td><td class="col-r">523s (juil25)</td><td class="col-r">503s (déc25)</td><td><span class="badge badge-up">-36s</span></td></tr>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">✓ = progression nette, au-dessus de la variabilité journalière raisonnable pour ce type de test (~±30s). Les comparaisons sont uniquement valides pour la même version.</p>
+  </div>
+</div>
+
+<!-- ===================== SKILL ===================== -->
+<div id="section-skill" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Skill</div>
+    <h2>Flight Simulator — Double-Unders</h2>
+    <p>For Time avec time cap 12 minutes. Rx = 5-10-15-20-25-30-35-40-45-50-45-40-35-30-25-20-15-10-5 reps unbroken. Score : temps si terminé, ou "cap + reps réalisés" si non terminé. 3 sessions disponibles sur 5.</p>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>Limite analytique importante</strong>
+    Ce test combine deux métriques dans la même colonne (temps OU score post-cap), et propose 4 versions non comparables entre elles. La cohorte appariée par version ne dépasse pas 3-4 athlètes. Les données ci-dessous sont descriptives, pas longitudinales.
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Répartition des versions — déc. 2023</div>
+      <div class="prog-wrap"><div class="prog-label"><span>Rx (DU unbroken)</span><span>19% (n=5)</span></div><div class="prog-track"><div class="prog-fill" style="width:19%;background:#1a56db"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>SC#1 (reps réduites)</span><span>4% (n=1)</span></div><div class="prog-track"><div class="prog-fill" style="width:4%;background:#c2185b"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>SC#2 (sauts simples interm.)</span><span>7% (n=2)</span></div><div class="prog-track"><div class="prog-fill" style="width:7%;background:#2e7d32"></div></div></div>
+      <div class="prog-wrap"><div class="prog-label"><span>SC#3 (single unders)</span><span>70% (n=19)</span></div><div class="prog-track"><div class="prog-fill" style="width:70%;background:#888"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Effectifs par session</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Session</th><th class="col-r">Total</th><th class="col-r">Rx</th><th class="col-r">SC#3</th></tr>
+          <tr><td>Déc. 2023</td><td class="col-r">27</td><td class="col-r">5</td><td class="col-r">19</td></tr>
+          <tr><td>Juin 2024</td><td class="col-r" colspan="3" style="color:var(--text-muted)">Données absentes</td></tr>
+          <tr><td>Déc. 2024</td><td class="col-r" colspan="3" style="color:var(--text-muted)">Données absentes</td></tr>
+          <tr><td>Juil. 2025</td><td class="col-r">20</td><td class="col-r">8</td><td class="col-r">9</td></tr>
+          <tr><td>Déc. 2025</td><td class="col-r">18</td><td class="col-r">5</td><td class="col-r">10</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Athlètes présents à 2+ sessions (même version)</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Version</th><th class="col-r">Déc 2023</th><th class="col-r">Juil 2025</th><th class="col-r">Déc 2025</th><th>Note</th></tr>
+        <tr><td>Baudouin C.</td><td><span class="badge badge-rx">Rx</span></td><td class="col-r">—</td><td class="col-r">14:25</td><td class="col-r">12:45</td><td><span class="badge badge-up">-1:40</span></td></tr>
+        <tr><td>Paulus J.</td><td><span class="badge badge-rx">Rx</span></td><td class="col-r">7:10</td><td class="col-r">—</td><td class="col-r">—</td><td>1 session</td></tr>
+        <tr><td>Delmas O.</td><td><span class="badge badge-sc">SC#3</span></td><td class="col-r">—</td><td class="col-r">cap+225</td><td class="col-r">cap+225</td><td><span class="badge badge-flat">stable</span></td></tr>
+        <tr><td>Scaillet M.</td><td><span class="badge badge-sc">SC#3</span></td><td class="col-r">7:21</td><td class="col-r">—</td><td class="col-r">9:00</td><td><span class="badge badge-down">+1:39</span></td></tr>
+        <tr><td>L'Olivo T.</td><td>SC#3→Rx</td><td class="col-r">6:46 (SC#3)</td><td class="col-r">cap+250 (Rx)</td><td class="col-r">—</td><td>version différente</td></tr>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">L'Olivo T. a changé de version entre sessions — comparaison non valide mais indique une progression du niveau de double-unders.</p>
+  </div>
+</div>
+
+<!-- ===================== STAMINA ===================== -->
+<div id="section-stamina" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Stamina</div>
+    <h2>3min Pull-ups + 3min Push-ups + 3min Wall Ball</h2>
+    <p>Trois parties avec 3min de repos. Deux scores par partie : 1er set unbroken + total 3 minutes. Première session : déc. 2025 — ces données constituent la baseline de référence pour les sessions futures.</p>
+  </div>
+
+  <div class="alert alert-info">
+    <strong>Première session uniquement</strong>
+    Ce test a été lancé en déc. 2025. Il n'y a pas encore de comparaison longitudinale possible. Les données ci-dessous sont la baseline à comparer lors de la prochaine batterie B (prévu ~juin 2026).
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric blue"><div class="metric-label">Participants</div><div class="metric-val">25</div><div class="metric-sub">Déc. 2025</div></div>
+    <div class="metric green"><div class="metric-label">Version 1 (RX)</div><div class="metric-val">14</div><div class="metric-sub">56%</div></div>
+    <div class="metric amber"><div class="metric-label">Version 2 (banded)</div><div class="metric-val">7</div><div class="metric-sub">28%</div></div>
+    <div class="metric"><div class="metric-label">Version 3 + Autre</div><div class="metric-val">4</div><div class="metric-sub">16%</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Données brutes — déc. 2025 (V1 uniquement)</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Athlète</th><th>Sexe</th><th>Exp.</th><th class="col-r">Pull UB</th><th class="col-r">Pull tot.</th><th class="col-r">Push UB</th><th class="col-r">Push tot.</th><th class="col-r">WB UB</th><th class="col-r">WB tot.</th></tr>
+        <tr><td>Boudin J.</td><td>H</td><td>3+ ans</td><td class="col-r">54</td><td class="col-r">82</td><td class="col-r">20</td><td class="col-r">38</td><td class="col-r">15</td><td class="col-r">40</td></tr>
+        <tr><td>Gilard T.</td><td>H</td><td>3+ ans</td><td class="col-r">34</td><td class="col-r">62</td><td class="col-r">31</td><td class="col-r">60</td><td class="col-r">17</td><td class="col-r">44</td></tr>
+        <tr><td>L'Olivo T.</td><td>H</td><td>3+ ans</td><td class="col-r">30</td><td class="col-r">60</td><td class="col-r">31</td><td class="col-r">55</td><td class="col-r">15</td><td class="col-r">43</td></tr>
+        <tr><td>Lechat A.</td><td>H</td><td>3+ ans</td><td class="col-r">27</td><td class="col-r">50</td><td class="col-r">32</td><td class="col-r">62</td><td class="col-r">15</td><td class="col-r">40</td></tr>
+        <tr><td>Vincart K.</td><td>H</td><td>3+ ans</td><td class="col-r">22</td><td class="col-r">51</td><td class="col-r">22</td><td class="col-r">53</td><td class="col-r">15</td><td class="col-r">45</td></tr>
+        <tr><td>Huybrechts T.</td><td>H</td><td>0-6 mois</td><td class="col-r">20</td><td class="col-r">52</td><td class="col-r">20</td><td class="col-r">35</td><td class="col-r">18</td><td class="col-r">47</td></tr>
+        <tr><td>Constant H.</td><td>H</td><td>3+ ans</td><td class="col-r">21</td><td class="col-r">48</td><td class="col-r">21</td><td class="col-r">37</td><td class="col-r">14</td><td class="col-r">33</td></tr>
+        <tr><td>Aglave L.</td><td>H</td><td>1-3 ans</td><td class="col-r">21</td><td class="col-r">59</td><td class="col-r">20</td><td class="col-r">43</td><td class="col-r">15</td><td class="col-r">40</td></tr>
+        <tr><td>Lefebvre T.</td><td>H</td><td>1-3 ans</td><td class="col-r">17</td><td class="col-r">42</td><td class="col-r">40</td><td class="col-r">63</td><td class="col-r">16</td><td class="col-r">42</td></tr>
+        <tr><td>Ghys T.</td><td>H</td><td>3+ ans</td><td class="col-r">25</td><td class="col-r">50</td><td class="col-r">22</td><td class="col-r">47</td><td class="col-r">17</td><td class="col-r">37</td></tr>
+        <tr><td>Delmas L.</td><td>H</td><td>6-12 mois</td><td class="col-r">10</td><td class="col-r">21</td><td class="col-r">9</td><td class="col-r">21</td><td class="col-r">30</td><td class="col-r">67</td></tr>
+        <tr><td>Baudouin C.</td><td>F</td><td>3+ ans</td><td class="col-r">36</td><td class="col-r">56</td><td class="col-r">33</td><td class="col-r">56</td><td class="col-r">24</td><td class="col-r">64</td></tr>
+        <tr><td>Feller A.</td><td>F</td><td>3+ ans</td><td class="col-r">4</td><td class="col-r">22</td><td class="col-r">10</td><td class="col-r">22</td><td class="col-r">10</td><td class="col-r">24</td></tr>
+        <tr><td>Vullo S.</td><td>F</td><td>3+ ans</td><td class="col-r">9</td><td class="col-r">37</td><td class="col-r">12</td><td class="col-r">30</td><td class="col-r">19</td><td class="col-r">48</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Médianes V1 (baseline)</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th></th><th class="col-r">Unbroken</th><th class="col-r">Total 3min</th></tr>
+          <tr><td><strong>Pull-ups</strong></td><td class="col-r">22</td><td class="col-r">51</td></tr>
+          <tr><td><strong>Push-ups</strong></td><td class="col-r">22</td><td class="col-r">47</td></tr>
+          <tr><td><strong>Wall Ball</strong></td><td class="col-r">16</td><td class="col-r">43</td></tr>
+        </table>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Basé sur les 14 participants V1 (hors doublon Feller). Médiane calculée sur hommes + femmes confondus.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Anomalie à corriger</div>
+      <div class="alert alert-warn" style="margin:0">
+        <strong>Doublon Alice Feller</strong>
+        Deux soumissions à 1h d'intervalle (13:09 et 13:12). Scores unbroken identiques mais totaux différents. La deuxième ligne (13:12) semble une correction mais les totaux restent incohérents. À vérifier directement avec l'athlète.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SUIVI INDIVIDUEL ===================== -->
+<div id="section-athletes" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Suivi individuel</div>
+    <h2>Profils athlètes</h2>
+    <p>Athlètes présents à 3 sessions ou plus sur la Batterie B. Ce sont les profils les plus exploitables pour un suivi longitudinal.</p>
+  </div>
+
+  <div class="filter-row">
+    <label>Filtrer :</label>
+    <select id="athSexFilter" onchange="renderAthletes()">
+      <option value="all">Tous</option>
+      <option value="H">Hommes</option>
+      <option value="F">Femmes</option>
+    </select>
+    <input type="text" id="athSearch" placeholder="Rechercher un nom..." oninput="renderAthletes()" style="width:200px">
+  </div>
+  <div id="athleteList"></div>
+</div>
+
+<!-- ===================== NOTES COACHS ===================== -->
+<div id="section-coachs" class="section">
+  <div class="section-head">
+    <div class="eyebrow">Analyse critique</div>
+    <h2>Notes pour les coachs</h2>
+    <p>Points d'attention sur la qualité des données, les actions correctives recommandées, et les limites d'interprétation.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Problèmes à corriger en priorité</div>
+    <div class="alert alert-danger" style="margin-bottom:10px">
+      <strong>1. Identifiant athlète instable</strong>
+      L'email est utilisé comme clé d'identification mais change (ex : Victor Noel sous 3 adresses différentes). Le numéro de membre existe mais est saisi librement (valeurs vides, texte, décimales). Solution : imposer le numéro de membre par liste déroulante dans le formulaire — c'est le seul identifiant qui survit à un changement d'email.
+    </div>
+    <div class="alert alert-danger" style="margin-bottom:10px">
+      <strong>2. Pull-up et Dips : couleurs d'élastique non exploitables</strong>
+      ~77% des femmes et ~21% des hommes notent une couleur (turquoise, jaune…) au lieu d'une charge en kg. Sans référentiel couleur → résistance documenté et stable, ces données ne permettent pas de comparaison longitudinale. Solutions : soit un champ kg uniquement, soit un référentiel affiché et figé dans le formulaire.
+    </div>
+    <div class="alert alert-warn" style="margin-bottom:10px">
+      <strong>3. Formats de temps hétérogènes (Isabel, CrossFit, Skill)</strong>
+      La même colonne contient du mm:ss, des entiers (241, 301), des formats apostrophe (1'45''), des annotations de charge dans la cellule temps (4:20 25kg). Imposer le format mm:ss par validation côté formulaire élimine le problème à la source.
+    </div>
+    <div class="alert alert-warn" style="margin-bottom:10px">
+      <strong>4. Skill : deux sessions manquantes</strong>
+      Juin 2024 et déc. 2024 absentes du Flight Simulator. Sans données continues, la comparaison longitudinale n'est pas possible. Si le test est organisé, les scores doivent être saisis systématiquement.
+    </div>
+    <div class="alert alert-info">
+      <strong>5. Stamina : lancer la collecte régulière</strong>
+      Première session en déc. 2025. La baseline est posée. Pour avoir un longitudinal exploitable, la prochaine session B (~juin 2026) doit absolument inclure ce test avec le même formulaire.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lecture correcte des résultats cohorte</div>
+    <p style="font-size:13px;margin-bottom:10px">La participation a baissé de ~40% entre déc. 2023 et juil. 2025. Cela signifie que les médianes de groupe ne sont pas directement comparables d'une session à l'autre : une médiane qui monte peut refléter le départ des athlètes les plus faibles autant qu'une progression réelle.</p>
+    <p style="font-size:13px;margin-bottom:10px">Pour distinguer un effet de programmation d'un effet de composition de cohorte, il faut se restreindre aux athlètes appariés (présents à au moins deux sessions comparées). Le tableau "Suivi individuel" de ce rapport liste ces athlètes.</p>
+    <p style="font-size:13px">Aucune donnée de ce rapport ne permet d'attribuer une progression à la programmation spécifiquement. Ce serait une surinterprétation. Ce que les données montrent : qui a progressé, qui a stagné, qui a régressé — et rien de plus.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hiérarchie de confiance des conclusions</div>
+    <div class="alert alert-success" style="margin-bottom:8px">
+      <strong>Solide</strong>
+      Participation en baisse de ~40%. Fraipont G. : +20kg snatch, +15kg squat, +40 cal conditioning sur 3 sessions. Boudin N. : -75s CrossFit V1 sur 3 sessions. L'Olivo T. : -90s CrossFit V1. Godefroid T. : +15kg snatch, +10kg squat.
+    </div>
+    <div class="alert alert-warn" style="margin-bottom:8px">
+      <strong>Plausible mais à confirmer</strong>
+      Tendance médiane Front Squat hommes légèrement positive (85→90 kg). Proportion V1/RX CrossFit stable (~25%), suggérant maintien du niveau général. Légère hausse conditioning femmes entre juin 2024 et juil. 2025.
+    </div>
+    <div class="alert alert-danger">
+      <strong>Non démontrable avec ces données</strong>
+      Tout effet de la programmation sur les résultats. Conclusions sur Skill et Stamina en longitudinal. Évolutions de médianes cohorte entière.
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer class="page-footer">
+  CrossFit Link — Rapport Batterie B — Données déc. 2023 à déc. 2025 — Généré le <span id="footerDate"></span>
+</footer>
+
+<script>
+document.getElementById('reportDate').textContent = new Date().toLocaleDateString('fr-BE', {day:'numeric',month:'long',year:'numeric'});
+document.getElementById('footerDate').textContent = new Date().toLocaleDateString('fr-BE', {day:'numeric',month:'long',year:'numeric'});
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const names = ['overview','conditioning','weightlifting','strength','crossfit','skill','stamina','athletes','coachs'];
+  btns.forEach((b, i) => { if (names[i] === name) b.classList.add('active'); });
+  if (name === 'conditioning') { setTimeout(renderCondChart, 50); }
+  if (name === 'weightlifting') { setTimeout(renderSnatchChart, 50); }
+  if (name === 'strength') { setTimeout(renderSquatChart, 50); }
+  if (name === 'crossfit') { setTimeout(renderCFChart, 50); }
+  if (name === 'athletes') renderAthletes();
+}
+
+const SESS = ['Déc 23','Juin 24','Déc 24','Juil 25','Déc 25'];
+const CH = { blue: '#1a56db', pink: '#c2185b', green: '#2e7d32', gray: '#9e9e9e' };
+
+let partInst = null;
+(function() {
+  const ctx = document.getElementById('partChart').getContext('2d');
+  partInst = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: SESS, datasets: [
+      { label: 'Hommes', data: [29,27,17,16,20], backgroundColor: CH.blue + 'bb' },
+      { label: 'Femmes', data: [17,17,10,10,13], backgroundColor: CH.pink + 'bb' }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { stacked: true, ticks: { font: { size: 12 } } }, y: { stacked: true, title: { display: true, text: 'Participants' }, ticks: { font: { size: 11 } } } } }
+  });
+})();
+
+let condInst = null;
+function renderCondChart() {
+  const sexe = document.getElementById('condFilter').value;
+  if (condInst) { condInst.destroy(); condInst = null; }
+  const ctx = document.getElementById('condChart').getContext('2d');
+  const ds = [];
+  if (sexe !== 'F') ds.push({ label: 'Hommes', data: [416,421,431,440,426], borderColor: CH.blue, backgroundColor: CH.blue + '18', fill: true, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.blue });
+  if (sexe !== 'H') ds.push({ label: 'Femmes', data: [322,305,333,359,314], borderColor: CH.pink, backgroundColor: CH.pink + '18', fill: true, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.pink });
+  condInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: SESS, datasets: ds },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { min: 200, max: 650, title: { display: true, text: 'Calories' }, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 12 } } } } }
+  });
+}
+
+let snatchInst = null;
+function renderSnatchChart() {
+  if (snatchInst) { snatchInst.destroy(); snatchInst = null; }
+  const ctx = document.getElementById('snatchChart').getContext('2d');
+  snatchInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: SESS, datasets: [
+      { label: 'Hommes', data: [62.5,50,55,57,55], borderColor: CH.blue, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.blue },
+      { label: 'Femmes', data: [30,28,25,30,30], borderColor: CH.pink, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.pink }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { min: 0, max: 110, title: { display: true, text: 'kg' }, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 12 } } } } }
+  });
+}
+
+let squatInst = null;
+function renderSquatChart() {
+  if (squatInst) { squatInst.destroy(); squatInst = null; }
+  const ctx = document.getElementById('squatChart').getContext('2d');
+  squatInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: SESS, datasets: [
+      { label: 'Hommes', data: [85,82,85,90,90], borderColor: CH.blue, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.blue },
+      { label: 'Femmes', data: [50,48,47,51,50], borderColor: CH.pink, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.pink }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { min: 0, max: 140, title: { display: true, text: 'kg' }, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 12 } } } } }
+  });
+}
+
+let cfInst = null;
+function renderCFChart() {
+  if (cfInst) { cfInst.destroy(); cfInst = null; }
+  const ctx = document.getElementById('cfChart').getContext('2d');
+  cfInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: SESS, datasets: [
+      { label: 'V1/RX Hommes', data: [430,408,432,356,null], borderColor: CH.blue, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.blue, spanGaps: false },
+      { label: 'V1/RX Femmes', data: [594,479,477,510,null], borderColor: CH.pink, fill: false, tension: 0.35, borderDash: [5,4], pointRadius: 5, pointBackgroundColor: CH.pink, spanGaps: false },
+      { label: 'V3 tous', data: [407,392,357,340,368], borderColor: CH.green, fill: false, tension: 0.35, pointRadius: 5, pointBackgroundColor: CH.green }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { y: { min: 200, max: 700, title: { display: true, text: 'secondes (moins = mieux)' }, ticks: { font: { size: 11 } } }, x: { ticks: { font: { size: 12 } } } } }
+  });
+}
+
+const ATHLETES = [
+  { name:'Fraipont G.', sex:'H', sessions:4,
+    cond:[451,439,491,null,null], snatch:[65,75,85,null,null], squat:[100,115,115,null,null],
+    cf:'V1/RX : 287s → 265s', skill:'—', stamina:'—' },
+  { name:'Boudin N.', sex:'H', sessions:4,
+    cond:[null,null,null,null,null], snatch:[null,80,88,90,90], squat:[null,null,110,null,110],
+    cf:'V1/RX : 431s → 384s → 356s', skill:'Rx déc25', stamina:'Pull 54/82 · Push 20/38 · WB 15/40' },
+  { name:'Godefroid T.', sex:'H', sessions:4,
+    cond:[null,null,null,null,null], snatch:[55,60,65,null,70], squat:[null,95,100,null,105],
+    cf:'V2→V1 (changement version)', skill:'SC#3 déc23', stamina:'—' },
+  { name:'Paulus J.', sex:'H', sessions:3,
+    cond:[384,417,422,null,null], snatch:[70,70,74,null,null], squat:[null,95,100,null,null],
+    cf:'V1/RX : 399s (1 sess.)', skill:'Rx : 7:10 déc23', stamina:'—' },
+  { name:'Lechat A.', sex:'H', sessions:4,
+    cond:[null,null,null,null,null], snatch:[null,null,50,50,null], squat:[null,80,85,80,85],
+    cf:'V2 : 700s → 620s', skill:'Rx juil25', stamina:'Pull 27/50 · Push 32/62 · WB 15/40' },
+  { name:'Gilard T.', sex:'H', sessions:3,
+    cond:[474,null,null,544,499], snatch:[null,62,null,null,null], squat:[null,null,null,95,null],
+    cf:'—', skill:'SC#3 juil25', stamina:'Pull 34/62 · Push 31/60 · WB 17/44' },
+  { name:'Aglave L.', sex:'H', sessions:4,
+    cond:[null,null,null,null,null], snatch:[null,null,null,null,null], squat:[83,null,80,75,null],
+    cf:'V3 : 327s → 310s', skill:'SC#3 juil25', stamina:'Pull 21/59 · Push 20/43 · WB 15/40' },
+  { name:'Vincart K.', sex:'H', sessions:3,
+    cond:[null,null,null,null,null], snatch:[null,null,null,65,70], squat:[null,null,null,100,100],
+    cf:'V1/RX : 539s → 523s → 503s', skill:'Rx déc25', stamina:'Pull 22/51 · Push 22/53 · WB 15/45' },
+  { name:'Baudouin C.', sex:'F', sessions:5,
+    cond:[null,null,349,344,314], snatch:[52,57,null,58,55], squat:[null,83,85,90,null],
+    cf:'V1/RX : 594s → 648s → 569s', skill:'Rx juil25 14:25 / Rx déc25 12:45', stamina:'Pull 36/56 · Push 33/56 · WB 24/64' },
+  { name:'L\'Olivo T.', sex:'H', sessions:4,
+    cond:[null,null,null,null,null], snatch:[null,null,null,48,null], squat:[70,null,70,null,70],
+    cf:'V1/RX : 579s → 468s → 489s', skill:'SC#3→Rx (changement)', stamina:'Pull 30/60 · Push 31/55 · WB 15/43' },
+  { name:'Van Frausum J.', sex:'F', sessions:3,
+    cond:[null,null,null,null,null], snatch:[null,null,null,null,null], squat:[55,null,40,53,55],
+    cf:'V2 : variable', skill:'—', stamina:'—' },
+  { name:'Boe S.', sex:'H', sessions:3,
+    cond:[null,null,null,null,null], snatch:[null,null,null,null,null], squat:[null,null,85,92,null],
+    cf:'V1/RX : 387s → 432s → 384s', skill:'Rx juil25', stamina:'—' },
+  { name:'Blaffart A.', sex:'H', sessions:3,
+    cond:[494,498,null,null,null], snatch:[70,70,null,70,null], squat:[112,115,null,120,null],
+    cf:'V2 : 456s → 400s', skill:'—', stamina:'—' },
+  { name:'Vanderlinck A.', sex:'F', sessions:3,
+    cond:[null,318,null,359,349], snatch:[null,null,null,null,null], squat:[null,null,null,null,null],
+    cf:'V2 : 446s → 409s → 413s', skill:'—', stamina:'—' },
+  { name:'L\'Lefebvre T.', sex:'H', sessions:3,
+    cond:[null,398,null,426,null], snatch:[null,50,null,50,55], squat:[null,null,75,null,93],
+    cf:'V3 : variable', skill:'—', stamina:'Pull 17/42 · Push 40/63 · WB 16/42' },
+];
+
+function renderAthletes() {
+  const sexF = document.getElementById('athSexFilter').value;
+  const q = document.getElementById('athSearch').value.toLowerCase().trim();
+  const filtered = ATHLETES.filter(a =>
+    (sexF === 'all' || a.sex === sexF) &&
+    (!q || a.name.toLowerCase().includes(q))
+  );
+  const container = document.getElementById('athleteList');
+  if (!filtered.length) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Aucun athlète trouvé.</p>'; return; }
+
+  container.innerHTML = filtered.map(a => {
+    const condVals = a.cond.map((v,i) => v !== null ? `<span style="font-size:11px;color:var(--text-muted)">${SESS[i]}</span> <strong>${v} cal</strong>` : '').filter(Boolean).join(' &nbsp;→&nbsp; ');
+    const snatchVals = a.snatch.map((v,i) => v !== null ? `<span style="font-size:11px;color:var(--text-muted)">${SESS[i]}</span> <strong>${v} kg</strong>` : '').filter(Boolean).join(' &nbsp;→&nbsp; ');
+    const squatVals = a.squat.map((v,i) => v !== null ? `<span style="font-size:11px;color:var(--text-muted)">${SESS[i]}</span> <strong>${v} kg</strong>` : '').filter(Boolean).join(' &nbsp;→&nbsp; ');
+    return `<div class="athlete-profile">
+      <div class="ap-header">
+        <div class="ap-name">${a.name}</div>
+        <div class="ap-meta">${a.sex === 'H' ? 'Homme' : 'Femme'} &middot; ${a.sessions} sessions</div>
+      </div>
+      <div style="display:grid;gap:8px;font-size:12px">
+        ${condVals ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">Conditioning</span>${condVals}</div>` : ''}
+        ${snatchVals ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">Snatch 1RM</span>${snatchVals}</div>` : ''}
+        ${squatVals ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">Front Squat</span>${squatVals}</div>` : ''}
+        ${a.cf !== '—' ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">CrossFit</span>${a.cf}</div>` : ''}
+        ${a.skill !== '—' ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">Skill</span>${a.skill}</div>` : ''}
+        ${a.stamina !== '—' ? `<div><span style="color:var(--text-muted);display:inline-block;width:110px">Stamina</span>${a.stamina}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+renderAthletes();
+</script>
+</body>
+</html>
